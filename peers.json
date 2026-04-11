@@ -1,106 +1,16 @@
-#include <windows.h>
-#include <vector>
-#include <string>
-#include <thread>
-#include <cstdint>
-#include <bit>
-#include <d3d11.h>
-// Подключаем ImGui (пути зависят от твоей папки)
-#include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
-#include "imgui/imgui_impl_dx11.h"
-
-// --- [ 1. Полный Проксинг winmm.dll ] ---
-#pragma comment(linker, "/export:PlaySoundA=C:\\Windows\\System32\\winmm.PlaySoundA")
-#pragma comment(linker, "/export:timeGetTime=C:\\Windows\\System32\\winmm.timeGetTime")
-#pragma comment(linker, "/export:timeSetEvent=C:\\Windows\\System32\\winmm.timeSetEvent")
-#pragma comment(linker, "/export:mciSendStringA=C:\\Windows\\System32\\winmm.mciSendStringA")
-// (Добавь остальные экспорты из предыдущего ответа по необходимости)
-
-// --- [ 2. Premium SDK & Encryption ] ---
-namespace sdk {
-    struct vec3 { float x, y, z; };
-    
-    // Автоматический дешифратор для игровых параметров (FOV, Health и т.д.)
-    template <typename T>
-    T decrypt_value(uintptr_t addr) {
-        if (!addr) return T();
-        uint32_t eax = *reinterpret_cast<uint32_t*>(addr);
-        eax ^= 0x320F3D0E; // Актуальный ключ из твоих фрагментов
-        eax += 0x4C364ABC;
-        eax = (eax >> 0x1E) | (eax << 0x02);
-        return std::bit_cast<T>(eax);
+{
+  "peers": [
+    {
+      "name": "User_1",
+      "public_ip": "46.191.233.204",
+      "port": 8060,
+      "virtual_ip": "10.8.0.1"
+    },
+    {
+      "name": "User_2",
+      "public_ip": "IP_ДРУГА",
+      "port": 8060,
+      "virtual_ip": "10.8.0.2"
     }
-
-    // Твоя логика скорости лука
-    float get_arrow_speed(float dist) {
-        if (dist <= 41.f) return 60.f;
-        if (dist <= 82.f) return 58.f;
-        if (dist <= 163.f) return 56.f;
-        return 55.f;
-    }
-}
-
-// --- [ 3. Защита и Закрепление ] ---
-namespace security {
-    void pin_and_hide(HMODULE hMod) {
-        // 1. Закрепляем DLL в процессе (Pinning)
-        HMODULE dummy;
-        GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN, (LPCSTR)hMod, &dummy);
-
-        // 2. Закрепляем важные игровые DLL
-        const char* critical_dlls[] = { "GameAssembly.dll", "UnityPlayer.dll" };
-        for (auto name : critical_dlls) {
-            HMODULE h = GetModuleHandleA(name);
-            if (h) GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN, (LPCSTR)h, &dummy);
-        }
-
-        // 3. Стираем PE-заголовки (Маскировка в памяти)
-        DWORD old;
-        VirtualProtect(hMod, 0x1000, PAGE_READWRITE, &old);
-        SecureZeroMemory(hMod, 0x1000);
-        VirtualProtect(hMod, 0x1000, old, &old);
-    }
-}
-
-// --- [ 4. Рендеринг и Меню (ImGui) ] ---
-bool b_menu_open = true;
-void render_menu() {
-    if (GetAsyncKeyState(VK_INSERT) & 1) b_menu_open = !b_menu_open;
-    if (!b_menu_open) return;
-
-    ImGui::Begin("Premium Internal", &b_menu_open);
-    ImGui::Text("Weapon: Hunting Bow");
-    static bool b_esp = false;
-    static bool b_aim = false;
-    ImGui::Checkbox("Enable ESP (Wallhack)", &b_esp);
-    ImGui::Checkbox("Enable Aimbot (Prediction)", &b_aim);
-    ImGui::End();
-}
-
-// --- [ 5. Главный цикл чита ] ---
-DWORD WINAPI MainThread(LPVOID lpParam) {
-    HMODULE hMod = (HMODULE)lpParam;
-
-    // Ждем загрузки движка
-    while (!GetModuleHandleA("GameAssembly.dll")) Sleep(500);
-
-    security::pin_and_hide(hMod);
-
-    // Здесь инициализируешь ImGui хуки (DX11 Present Hook)
-    // В данном примере - бесконечный цикл логики
-    while (true) {
-        // update_aimbot();
-        // update_esp();
-        Sleep(1);
-    }
-    return 0;
-}
-
-BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID res) {
-    if (reason == DLL_PROCESS_ATTACH) {
-        DisableThreadLibraryCalls(hMod);
-        CreateThread(0, 0, MainThread, hMod, 0, 0);
-    }
-    return TRUE;
+  ]
 }
