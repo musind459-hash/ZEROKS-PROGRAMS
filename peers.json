@@ -8,7 +8,7 @@
     },
     {
       "name": "User_2",
-      "public_ip": "IP_ДРУГА",
+      "public_ip": "37.112.165.101",
       "port": 8060,
       "virtual_ip": "10.8.0.2"
     }
