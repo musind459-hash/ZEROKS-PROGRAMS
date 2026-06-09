@@ -1,16 +1,1 @@
-{
-  "peers": [
-    {
-      "name": "User_1",
-      "public_ip": "46.191.233.204",
-      "port": 8060,
-      "virtual_ip": "10.8.0.1"
-    },
-    {
-      "name": "User_2",
-      "public_ip": "37.112.165.101",
-      "port": 8060,
-      "virtual_ip": "10.8.0.2"
-    }
-  ]
-}
+
